@@ -146,6 +146,7 @@
 
 		<form action="" method="POST" class="checkoutform">
 
+			{{ csrf_field() }}
 
 
 			@include('includes.form-success')
@@ -154,7 +155,6 @@
 
 
 
-			{{ csrf_field() }}
 
 
 
@@ -279,15 +279,7 @@
 
 												</div>
 
-                                                <div class="col-lg-6 {{ $digital == 1 ? 'd-none' : '' }}">
 
-                                                    <select class="form-control"  name="shipping_method" required="required">
-                                                        @foreach($shippings_available as $ship)
-                                                            <option value="{{$ship->id}}">{{ $ship->title }}</option>
-                                                        @endforeach
-                                                    </select>
-
-                                                </div>
 
 												<div class="col-lg-6">
 
@@ -1617,9 +1609,11 @@
 
 								<h4 class="title">{{ $langg->lang765 }}</h4>
 
+                            @if(!$shippings_available->count())
+                             <h4>No Methods available</h4>
+                            @else
 
-
-							{{-- @foreach($shipping_data as $data)
+                            @foreach($shippings_available as $data)
 
 
 
@@ -1647,11 +1641,12 @@
 
 
 
-							@endforeach		 --}}
+							@endforeach
 
 
 
 						</div>
+                        @endif
 
 						{{-- Shipping Method Area End --}}
 

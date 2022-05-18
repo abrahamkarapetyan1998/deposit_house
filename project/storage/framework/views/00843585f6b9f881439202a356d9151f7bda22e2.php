@@ -2,18 +2,6 @@
 
 
 
-<style type="text/css">
-
-    .order-table-wrap table#example2 {
-
-    margin: 10px 20px;
-
-}
-
-
-
-</style>
-
 
 
 <?php $__env->stopSection(); ?>
@@ -32,25 +20,25 @@
 
                                 <div class="col-lg-12">
 
-                                        <h4 class="heading"><?php echo e(__('Order Details')); ?> <a class="add-btn" href="javascript:history.back();"><i class="fas fa-arrow-left"></i> <?php echo e(__('Back')); ?></a></h4>
+                                        <h4 class="heading"><?php echo e($langg->lang549); ?> <a class="add-btn" href="<?php echo e(route('vendor-order-index')); ?>"><i class="fas fa-arrow-left"></i> <?php echo e($langg->lang550); ?></a></h4>
 
                                         <ul class="links">
 
                                             <li>
 
-                                                <a href="<?php echo e(route('admin.dashboard')); ?>"><?php echo e(__('Dashboard')); ?> </a>
+                                                <a href="<?php echo e(route('vendor-dashboard')); ?>"><?php echo e($langg->lang441); ?> </a>
 
                                             </li>
 
                                             <li>
 
-                                                <a href="javascript:;"><?php echo e(__('Orders')); ?></a>
+                                                <a href="javascript:;"><?php echo e($langg->lang443); ?></a>
 
                                             </li>
 
                                             <li>
 
-                                                <a href="javascript:;"><?php echo e(__('Order Details')); ?></a>
+                                                <a href="javascript:;"><?php echo e($langg->lang549); ?></a>
 
                                             </li>
 
@@ -80,7 +68,7 @@
 
                                             <h4 class="title">
 
-                                            <?php echo e(__('Order Details')); ?>
+                                            <?php echo e($langg->lang549); ?>
 
 
                                             </h4>
@@ -95,7 +83,7 @@
 
                                                 <tr>
 
-                                                    <th class="45%" width="45%"><?php echo e(__('Order ID')); ?></th>
+                                                    <th class="45%" width="45%"><?php echo e($langg->lang551); ?></th>
 
                                                     <td width="10%">:</td>
 
@@ -105,13 +93,17 @@
 
                                                 <tr>
 
-                                                    <th width="45%"><?php echo e(__('Total Product')); ?></th>
+                                                    <th width="45%"><?php echo e($langg->lang552); ?></th>
 
                                                     <td width="10%">:</td>
 
-                                                    <td width="45%"><?php echo e($order->totalQty); ?></td>
+                                                    <td width="45%"><?php echo e($order->vendororders()->where('user_id','=',$user->id)->sum('qty')); ?></td>
 
                                                 </tr>
+
+
+
+                                                <?php if(Auth::user()->id == $order->vendor_shipping_id): ?>
 
                                                 <?php if($order->shipping_cost != 0): ?>
 
@@ -137,6 +129,12 @@
 
                                                 <?php endif; ?>
 
+                                                <?php endif; ?>
+
+
+
+                                                <?php if(Auth::user()->id == $order->vendor_packing_id): ?>
+
                                                 <?php if($order->packing_cost != 0): ?>
 
                                                 <?php
@@ -161,21 +159,55 @@
 
                                                 <?php endif; ?>
 
+                                                <?php endif; ?>
+
 
 
                                                 <tr>
 
-                                                    <th width="45%"><?php echo e(__('Total Cost')); ?></th>
+                                                    <th width="45%"><?php echo e($langg->lang553); ?></th>
 
                                                     <td width="10%">:</td>
 
-                                                    <td width="45%"><?php echo e($order->currency_sign); ?><?php echo e(round($order->pay_amount * $order->currency_value , 2)); ?></td>
+
+
+                                                        <?php
+
+
+
+                                                        $price = round($order->vendororders()->where('user_id','=',$user->id)->sum('price'),2);
+
+
+
+                                                        if($user->shipping_cost != 0){
+
+                                                            $price = $price  + round($user->shipping_cost * $order->currency_value , 2);
+
+                                                            }
+
+
+
+                                                        if($order->tax != 0){
+
+                                                            $tax = ($price / 100) * $order->tax;
+
+                                                            $price  += $tax;
+
+                                                            }
+
+
+
+                                                        ?>
+
+
+
+                                                    <td width="45%"><?php echo e($order->currency_sign); ?><?php echo e(round($price * $order->currency_value , 2)); ?></td>
 
                                                 </tr>
 
                                                 <tr>
 
-                                                    <th width="45%"><?php echo e(__('Ordered Date')); ?></th>
+                                                    <th width="45%"><?php echo e($langg->lang554); ?></th>
 
                                                     <td width="10%">:</td>
 
@@ -183,9 +215,13 @@
 
                                                 </tr>
 
+
+
+
+
                                                 <tr>
 
-                                                    <th width="45%"><?php echo e(__('Payment Method')); ?></th>
+                                                    <th width="45%"><?php echo e($langg->lang795); ?></th>
 
                                                     <td width="10%">:</td>
 
@@ -201,7 +237,7 @@
 
                                                 <tr>
 
-                                                    <th width="45%"><?php echo e($order->method); ?> <?php echo e(__('Charge ID')); ?></th>
+                                                    <th width="45%"><?php echo e($order->method); ?> <?php echo e($langg->lang796); ?></th>
 
                                                     <td width="10%">:</td>
 
@@ -213,7 +249,7 @@
 
                                                 <tr>
 
-                                                    <th width="45%"><?php echo e($order->method); ?> <?php echo e(__('Transaction ID')); ?></th>
+                                                    <th width="45%"><?php echo e($order->method); ?> <?php echo e($langg->lang797); ?></th>
 
                                                     <td width="10%">:</td>
 
@@ -227,11 +263,11 @@
 
                                                 <tr>
 
-                                                    <th width="45%"><?php echo e(__('Payment Status')); ?></th>
+                                                    <th width="45%"><?php echo e($langg->lang798); ?></th>
 
                                                     <th width="10%">:</th>
 
-                                                    <td width="45%"><?php echo $order->payment_status == 'Pending' ? "<span class='badge badge-danger'>Unpaid</span>":"<span class='badge badge-success'>Paid</span>"; ?></td>
+                                                    <td width="45%"><?php echo $order->payment_status == 'Pending' ? "<span class='badge badge-danger'>". $langg->lang799 ."</span>":"<span class='badge badge-success'>". $langg->lang800 ."</span>"; ?></td>
 
                                                 </tr>
 
@@ -239,7 +275,7 @@
 
                                                 <tr>
 
-                                                    <th width="45%"><?php echo e(__('Order Note')); ?></th>
+                                                    <th width="45%"><?php echo e($langg->lang801); ?></th>
 
                                                     <th width="10%">:</th>
 
@@ -259,7 +295,7 @@
 
                                         <div class="footer-area">
 
-                                            <a href="<?php echo e(route('admin-order-invoice',$order->id)); ?>" class="mybtn1"><i class="fas fa-eye"></i> <?php echo e(__('View Invoice')); ?></a>
+                                            <a href="<?php echo e(route('vendor-order-invoice',$order->order_number)); ?>" class="mybtn1"><i class="fas fa-eye"></i> <?php echo e($langg->lang555); ?></a>
 
                                         </div>
 
@@ -275,7 +311,7 @@
 
                                             <h4 class="title">
 
-                                            <?php echo e(__('Billing Details')); ?>
+                                            <?php echo e($langg->lang556); ?>
 
 
                                             </h4>
@@ -290,7 +326,7 @@
 
                                                         <tr>
 
-                                                            <th width="45%"><?php echo e(__('Name')); ?></th>
+                                                            <th width="45%"><?php echo e($langg->lang557); ?></th>
 
                                                             <th width="10%">:</th>
 
@@ -300,7 +336,7 @@
 
                                                         <tr>
 
-                                                            <th width="45%"><?php echo e(__('Email')); ?></th>
+                                                            <th width="45%"><?php echo e($langg->lang558); ?></th>
 
                                                             <th width="10%">:</th>
 
@@ -310,7 +346,7 @@
 
                                                         <tr>
 
-                                                            <th width="45%"><?php echo e(__('Phone')); ?></th>
+                                                            <th width="45%"><?php echo e($langg->lang559); ?></th>
 
                                                             <th width="10%">:</th>
 
@@ -320,7 +356,7 @@
 
                                                         <tr>
 
-                                                            <th width="45%"><?php echo e(__('Address')); ?></th>
+                                                            <th width="45%"><?php echo e($langg->lang560); ?></th>
 
                                                             <th width="10%">:</th>
 
@@ -330,7 +366,7 @@
 
                                                         <tr>
 
-                                                            <th width="45%"><?php echo e(__('Country')); ?></th>
+                                                            <th width="45%"><?php echo e($langg->lang561); ?></th>
 
                                                             <th width="10%">:</th>
 
@@ -340,7 +376,7 @@
 
                                                         <tr>
 
-                                                            <th width="45%"><?php echo e(__('City')); ?></th>
+                                                            <th width="45%"><?php echo e($langg->lang562); ?></th>
 
                                                             <th width="10%">:</th>
 
@@ -350,85 +386,13 @@
 
                                                         <tr>
 
-                                                            <th width="45%"><?php echo e(__('Postal Code')); ?></th>
+                                                            <th width="45%"><?php echo e($langg->lang563); ?></th>
 
                                                             <th width="10%">:</th>
 
                                                             <td width="45%"><?php echo e($order->customer_zip); ?></td>
 
                                                         </tr>
-
-                            <?php if($order->coupon_code != null): ?>
-
-                            <tr>
-
-                                <th width="45%"><?php echo e(__('Coupon Code')); ?></th>
-
-                                <th width="10%">:</th>
-
-                                <td width="45%"><?php echo e($order->coupon_code); ?></td>
-
-                            </tr>
-
-                            <?php endif; ?>
-
-                            <?php if($order->coupon_discount != null): ?>
-
-                            <tr>
-
-                                <th width="45%"><?php echo e(__('Coupon Discount')); ?></th>
-
-                                <th width="10%">:</th>
-
-                                <?php if($gs->currency_format == 0): ?>
-
-                                <td width="45%"><?php echo e($order->currency_sign); ?><?php echo e($order->coupon_discount); ?></td>
-
-                                <?php else: ?>
-
-                                <td width="45%"><?php echo e($order->coupon_discount); ?><?php echo e($order->currency_sign); ?></td>
-
-                                <?php endif; ?>
-
-                            </tr>
-
-                            <?php endif; ?>
-
-                            <?php if($order->affilate_user != null): ?>
-
-                            <tr>
-
-                                <th width="45%"><?php echo e(__('Affilate User')); ?></th>
-
-                                <th width="10%">:</th>
-
-                                <td width="45%"><?php echo e(\DB::table('users')->where('id',$order->affilate_user)->exists() ? DB::table('users')->find($order->affilate_user)->name : ''); ?></td>
-
-                            </tr>
-
-                            <?php endif; ?>
-
-                            <?php if($order->affilate_charge != null): ?>
-
-                            <tr>
-
-                                <th width="45%"><?php echo e(__('Affilate Charge')); ?></th>
-
-                                <th width="10%">:</th>
-
-                                <?php if($gs->currency_format == 0): ?>
-
-                                <td width="45%"><?php echo e($order->currency_sign); ?><?php echo e($order->affilate_charge); ?></td>
-
-                                <?php else: ?>
-
-                                <td width="45%"><?php echo e($order->affilate_charge); ?><?php echo e($order->currency_sign); ?></td>
-
-                                <?php endif; ?>
-
-                            </tr>
-
-                            <?php endif; ?>
 
                                                 </tbody>
 
@@ -452,7 +416,7 @@
 
                                             <h4 class="title">
 
-                                            <?php echo e(__('Shipping Details')); ?>
+                                            <?php echo e($langg->lang564); ?>
 
 
                                             </h4>
@@ -469,7 +433,7 @@
 
                         <tr>
 
-                                    <th width="45%"><strong><?php echo e(__('Pickup Location')); ?>:</strong></th>
+                                    <th width="45%"><strong><?php echo e($langg->lang565); ?>:</strong></th>
 
                                     <th width="10%">:</th>
 
@@ -481,17 +445,17 @@
 
                                 <tr>
 
-                                    <th width="45%"><strong><?php echo e(__('Name')); ?>:</strong></th>
+                                    <th width="45%"><strong><?php echo e($langg->lang557); ?>:</strong></th>
 
                                     <th width="10%">:</th>
 
-                                     <td><?php echo e($order->shipping_name == null ? $order->customer_name : $order->shipping_name); ?></td>
+                <td><?php echo e($order->shipping_name == null ? $order->customer_name : $order->shipping_name); ?></td>
 
                                 </tr>
 
                                 <tr>
 
-                                    <th width="45%"><strong><?php echo e(__('Email')); ?>:</strong></th>
+                                    <th width="45%"><strong><?php echo e($langg->lang558); ?>:</strong></th>
 
                                     <th width="10%">:</th>
 
@@ -501,7 +465,7 @@
 
                                 <tr>
 
-                                    <th width="45%"><strong><?php echo e(__('Phone')); ?>:</strong></th>
+                                    <th width="45%"><strong><?php echo e($langg->lang559); ?>:</strong></th>
 
                                     <th width="10%">:</th>
 
@@ -511,7 +475,7 @@
 
                                 <tr>
 
-                                    <th width="45%"><strong><?php echo e(__('Address')); ?>:</strong></th>
+                                    <th width="45%"><strong><?php echo e($langg->lang560); ?>:</strong></th>
 
                                     <th width="10%">:</th>
 
@@ -521,7 +485,7 @@
 
                                 <tr>
 
-                                    <th width="45%"><strong><?php echo e(__('Country')); ?>:</strong></th>
+                                    <th width="45%"><strong><?php echo e($langg->lang561); ?>:</strong></th>
 
                                     <th width="10%">:</th>
 
@@ -531,7 +495,7 @@
 
                                 <tr>
 
-                                    <th width="45%"><strong><?php echo e(__('City')); ?>:</strong></th>
+                                    <th width="45%"><strong><?php echo e($langg->lang562); ?>:</strong></th>
 
                                     <th width="10%">:</th>
 
@@ -541,7 +505,7 @@
 
                                 <tr>
 
-                                    <th width="45%"><strong><?php echo e(__('Postal Code')); ?>:</strong></th>
+                                    <th width="45%"><strong><?php echo e($langg->lang563); ?>:</strong></th>
 
                                     <th width="10%">:</th>
 
@@ -556,9 +520,10 @@
 
                                     <th width="10%">:</th>
 
-                                    <td width="45%"><?php echo e($order->shippingMethod->title); ?></td>
+                <td width="45%"><?php echo e($order->shippingMethod->title); ?></td>
 
                                 </tr>
+
                                                 </tbody>
 
                                             </table>
@@ -585,7 +550,7 @@
 
                                         <div class="mr-table">
 
-                                            <h4 class="title"><?php echo e(__('Products Ordered')); ?></h4>
+                                            <h4 class="title"><?php echo e($langg->lang566); ?></h4>
 
                                             <div class="table-responsiv">
 
@@ -597,17 +562,17 @@
 
                                 <tr>
 
-                                    <th width="10%"><?php echo e(__('Product ID#')); ?></th>
+                                    <th><?php echo e($langg->lang567); ?></th>
 
-                                    <th><?php echo e(__('Shop Name')); ?></th>
+                                    <th><?php echo e($langg->lang568); ?></th>
 
-                                    <th><?php echo e(__('Vendor Status')); ?></th>
+                                    <th><?php echo e($langg->lang569); ?></th>
 
-                                    <th><?php echo e(__('Product Title')); ?></th>
+                                    <th><?php echo e($langg->lang570); ?></th>
 
-                                    <th width="20%"><?php echo e(__('Details')); ?></th>
+                                    <th><?php echo e($langg->lang539); ?></th>
 
-                                    <th width="10%"><?php echo e(__('Total Price')); ?></th>
+                                    <th><?php echo e($langg->lang574); ?></th>
 
                                 </tr>
 
@@ -618,6 +583,12 @@
                                                         <tbody>
 
                                 <?php $__currentLoopData = $cart['items']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+
+
+
+                                <?php if($product['item']['user_id'] != 0): ?>
+
+                                    <?php if($product['item']['user_id'] == $user->id): ?>
 
                                     <tr>
 
@@ -643,14 +614,10 @@
 
                                                 <?php else: ?>
 
-                                                <?php echo e(__('Vendor Removed')); ?>
+                                                <?php echo e($langg->lang575); ?>
 
 
                                                 <?php endif; ?>
-
-                                                <?php else: ?>
-
-                                                <a  href="javascript:;"><?php echo e(App\Models\Admin::find(1)->shop_name); ?></a>
 
                                                 <?php endif; ?>
 
@@ -674,33 +641,37 @@
 
 
 
-                                                    <span class="badge badge-success"><?php echo e(__('Completed')); ?></span>
+                                                   <span class="badge badge-success"><?php echo e($langg->lang542); ?></span>
 
 
 
                                                     <?php else: ?>
 
-                                                        <?php if($order->status == 'pending'): ?>
 
-                                                        <span class="badge badge-warning"><?php echo e(ucwords($order->status)); ?></span>
 
-                                                        <?php elseif($order->status == 'processing'): ?>
+                                                        <?php if($user->status == 'pending'): ?>
 
-                                                        <span class="badge badge-info"><?php echo e(ucwords($order->status)); ?></span>
+                                                        <span class="badge badge-warning"><?php echo e(ucwords($user->status)); ?></span>
 
-                                                       <?php elseif($order->status == 'on delivery'): ?>
+                                                        <?php elseif($user->status == 'processing'): ?>
 
-                                                        <span class="badge badge-primary"><?php echo e(ucwords($order->status)); ?></span>
+                                                        <span class="badge badge-info"><?php echo e(ucwords($user->status)); ?></span>
 
-                                                       <?php elseif($order->status == 'completed'): ?>
+                                                       <?php elseif($user->status == 'on delivery'): ?>
 
-                                                        <span class="badge badge-success"><?php echo e(ucwords($order->status)); ?></span>
+                                                        <span class="badge badge-primary"><?php echo e(ucwords($user->status)); ?></span>
 
-                                                       <?php elseif($order->status == 'declined'): ?>
+                                                       <?php elseif($user->status == 'completed'): ?>
 
-                                                        <span class="badge badge-danger"><?php echo e(ucwords($order->status)); ?></span>
+                                                        <span class="badge badge-success"><?php echo e(ucwords($user->status)); ?></span>
+
+                                                       <?php elseif($user->status == 'declined'): ?>
+
+                                                        <span class="badge badge-danger"><?php echo e(ucwords($user->status)); ?></span>
 
                                                        <?php endif; ?>
+
+
 
                                                     <?php endif; ?>
 
@@ -709,6 +680,8 @@
                                             <?php endif; ?>
 
                                             </td>
+
+
 
 
 
@@ -734,17 +707,9 @@
 
                                                 <?php else: ?>
 
-                                                <a target="_blank" href="<?php echo e(route('front.product', $product['item']['slug'])); ?>"><?php echo e(mb_strlen($product['item']['name'],'utf-8') > 30 ? mb_substr($product['item']['name'],0,30,'utf-8').'...' : $product['item']['name']); ?></a>
+                                                <a href="javascript:;"><?php echo e(mb_strlen($product['item']['name'],'utf-8') > 30 ? mb_substr($product['item']['name'],0,30,'utf-8').'...' : $product['item']['name']); ?></a>
 
                                                 <?php endif; ?>
-
-                                                <?php else: ?>
-
-
-
-                                                <a target="_blank" href="<?php echo e(route('front.product', $product['item']['slug'])); ?>"><?php echo e(mb_strlen($product['item']['name'],'utf-8') > 30 ? mb_substr($product['item']['name'],0,30,'utf-8').'...' : $product['item']['name']); ?></a>
-
-
 
                                                 <?php endif; ?>
 
@@ -754,7 +719,7 @@
 
                                                 <?php if($product['license'] != ''): ?>
 
-                              <a href="javascript:;" data-toggle="modal" data-target="#confirm-delete" class="btn btn-info product-btn" id="license" style="padding: 5px 12px;"><i class="fa fa-eye"></i> <?php echo e(__('View License')); ?></a>
+                              <a href="javascript:;" data-toggle="modal" data-target="#confirm-delete" class="btn btn-info product-btn" id="license" style="padding: 5px 12px;"><i class="fa fa-eye"></i> View License</a>
 
                                                 <?php endif; ?>
 
@@ -768,7 +733,7 @@
 
                                                <p>
 
-                                                    <strong><?php echo e(__('Size')); ?> :</strong> <?php echo e(str_replace('-',' ',$product['size'])); ?>
+                                                    <strong><?php echo e($langg->lang312); ?> :</strong> <?php echo e(str_replace('-',' ',$product['size'])); ?>
 
 
                                                </p>
@@ -779,9 +744,9 @@
 
                                                 <p>
 
-                                                        <strong><?php echo e(__('color')); ?> :</strong> <span
+                                                        <strong><?php echo e($langg->lang313); ?> :</strong> <span
 
-                                                        style="width: 20px; height: 20px; display: inline-block; vertical-align: middle;  background: #<?php echo e($product['color']); ?>;"></span>
+                                                        style="width: 40px; height: 20px; display: block; background: #<?php echo e($product['color']); ?>;"></span>
 
                                                 </p>
 
@@ -789,14 +754,14 @@
 
                                                 <p>
 
-                                                        <strong><?php echo e(__('Price')); ?> :</strong> <?php echo e($order->currency_sign); ?><?php echo e(round($product['item_price'] * $order->currency_value , 2)); ?>
+                                                        <strong><?php echo e($langg->lang754); ?> :</strong> <?php echo e($order->currency_sign); ?><?php echo e(round($product['item_price'] * $order->currency_value , 2)); ?>
 
 
                                                 </p>
 
                                                <p>
 
-                                                    <strong><?php echo e(__('Qty')); ?> :</strong> <?php echo e($product['qty']); ?> <?php echo e($product['item']['measure']); ?>
+                                                    <strong><?php echo e($langg->lang311); ?> :</strong> <?php echo e($product['qty']); ?> <?php echo e($product['item']['measure']); ?>
 
 
                                                </p>
@@ -826,12 +791,6 @@
 
 
 
-
-
-
-
-
-
                                             </td>
 
 
@@ -841,6 +800,14 @@
 
 
                                     </tr>
+
+
+
+                    <?php endif; ?>
+
+
+
+                <?php endif; ?>
 
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
@@ -858,7 +825,7 @@
 
                                         <a class="btn sendEmail send" href="javascript:;" class="send" data-email="<?php echo e($order->customer_email); ?>" data-toggle="modal" data-target="#vendorform">
 
-                                                <i class="fa fa-send"></i> <?php echo e(__('Send Email')); ?>
+                                                <i class="fa fa-send"></i> <?php echo e($langg->lang576); ?>
 
 
                                         </a>
@@ -899,7 +866,7 @@
 
     <div class="modal-header d-block text-center">
 
-        <h4 class="modal-title d-inline-block"><?php echo e(__('License Key')); ?></h4>
+        <h4 class="modal-title d-inline-block"><?php echo e($langg->lang577); ?></h4>
 
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
 
@@ -913,9 +880,9 @@
 
                 <div class="modal-body">
 
-                    <p class="text-center"><?php echo e(__('The Licenes Key is')); ?> :  <span id="key"></span> <a href="javascript:;" id="license-edit"><?php echo e(__('Edit License')); ?></a><a href="javascript:;" id="license-cancel" class="showbox"><?php echo e(__('Cancel')); ?></a></p>
+                    <p class="text-center"><?php echo e($langg->lang578); ?> :  <span id="key"></span> <a href="javascript:;" id="license-edit"><?php echo e($langg->lang577); ?></a><a href="javascript:;" id="license-cancel" class="showbox"><?php echo e($langg->lang584); ?></a></p>
 
-                    <form method="POST" action="<?php echo e(route('admin-order-license',$order->id)); ?>" id="edit-license" style="display: none;">
+                    <form method="POST" action="<?php echo e(route('vendor-order-license',$order->order_number)); ?>" id="edit-license" style="display: none;">
 
                         <?php echo e(csrf_field()); ?>
 
@@ -924,7 +891,7 @@
 
                         <div class="form-group text-center">
 
-                    <input type="text" name="license" placeholder="<?php echo e(__('Enter New License Key')); ?>" style="width: 40%; border: none;" required=""><input type="submit" name="submit" class="btn btn-primary" style="border-radius: 0; padding: 2px; margin-bottom: 2px;">
+                    <input type="text" name="<?php echo e($langg->lang585); ?>" placeholder="<?php echo e($langg->lang579); ?>" style="width: 40%; border: none;" required=""><input type="submit" name="submit" value="Save License" class="btn btn-primary" style="border-radius: 0; padding: 2px; margin-bottom: 2px;">
 
                         </div>
 
@@ -934,7 +901,7 @@
 
                 <div class="modal-footer justify-content-center">
 
-                    <button type="button" class="btn btn-danger" data-dismiss="modal"><?php echo e(__('Close')); ?></button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal"><?php echo e($langg->lang580); ?></button>
 
                 </div>
 
@@ -964,7 +931,7 @@
 
                 <div class="modal-header">
 
-                    <h5 class="modal-title" id="vendorformLabel"><?php echo e(__('Send Email')); ?></h5>
+                    <h5 class="modal-title" id="vendorformLabel"><?php echo e($langg->lang576); ?></h5>
 
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
 
@@ -993,25 +960,25 @@
 
                                         <li>
 
-                                            <input type="email" class="input-field eml-val" id="eml" name="to" placeholder="<?php echo e(__('Email')); ?> *" value="" required="">
+                                            <input type="email" class="input-field eml-val" id="eml" name="to" placeholder="<?php echo e($langg->lang583); ?> *" value="" required="">
 
                                         </li>
 
                                         <li>
 
-                                            <input type="text" class="input-field" id="subj" name="subject" placeholder="<?php echo e(__('Subject')); ?> *" required="">
+                                            <input type="text" class="input-field" id="subj" name="subject" placeholder="<?php echo e($langg->lang581); ?> *" required="">
 
                                         </li>
 
                                         <li>
 
-                                            <textarea class="input-field textarea" name="message" id="msg" placeholder="<?php echo e(__('Your Message')); ?> *" required=""></textarea>
+                                            <textarea class="input-field textarea" name="message" id="msg" placeholder="<?php echo e($langg->lang582); ?> *" required=""></textarea>
 
                                         </li>
 
                                     </ul>
 
-                                    <button class="submit-btn" id="emlsub" type="submit"><?php echo e(__('Send Email')); ?></button>
+                                    <button class="submit-btn" id="emlsub" type="submit"><?php echo e($langg->lang576); ?></button>
 
                                 </form>
 
@@ -1036,68 +1003,6 @@
 
 
 
-
-
-
-
-
-
-
-<div class="modal fade" id="confirm-delete2" tabindex="-1" role="dialog" aria-labelledby="modal1" aria-hidden="true">
-
-  <div class="modal-dialog">
-
-    <div class="modal-content">
-
-        <div class="submit-loader">
-
-            <img  src="<?php echo e(asset('assets/images/'.$gs->admin_loader)); ?>" alt="">
-
-        </div>
-
-    <div class="modal-header d-block text-center">
-
-        <h4 class="modal-title d-inline-block"><?php echo e(__('Update Status')); ?></h4>
-
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-
-                <span aria-hidden="true">&times;</span>
-
-            </button>
-
-    </div>
-
-
-
-      <!-- Modal body -->
-
-      <div class="modal-body">
-
-        <p class="text-center"><?php echo e(__("You are about to update the order's status.")); ?></p>
-
-        <p class="text-center"><?php echo e(__('Do you want to proceed?')); ?></p>
-
-      </div>
-
-
-
-      <!-- Modal footer -->
-
-      <div class="modal-footer justify-content-center">
-
-            <button type="button" class="btn btn-default" data-dismiss="modal"><?php echo e(__('Cancel')); ?></button>
-
-            <a class="btn btn-success btn-ok order-btn"><?php echo e(__('Proceed')); ?></a>
-
-      </div>
-
-
-
-    </div>
-
-  </div>
-
-</div>
 
 
 
@@ -1241,4 +1146,4 @@ $('#example2').dataTable( {
 
 <?php $__env->stopSection(); ?>
 
-<?php echo $__env->make('layouts.admin', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\OpenServer\domains\upwork_first\project\resources\views/admin/order/details.blade.php ENDPATH**/ ?>
+<?php echo $__env->make('layouts.vendor', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\OpenServer\domains\upwork_first\project\resources\views/vendor/order/details.blade.php ENDPATH**/ ?>

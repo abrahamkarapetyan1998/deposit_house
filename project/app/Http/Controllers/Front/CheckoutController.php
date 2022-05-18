@@ -113,8 +113,7 @@ $products = $cart->items;
  foreach($shipping_weghts as $key => $shipping_cal){
      $shipping_charge = Shipping::whereUserId($key)->where('form_weght', '<=' ,$shipping_cal['weght'])->where('to_weght' , '>=', $shipping_cal['weght'])->first();
      $shippings_available =  Shipping::where('form_weght', '<=' ,$shipping_cal['weght'])->where('to_weght' , '>=', $shipping_cal['weght'])->get();
-     debug($shippings_available);
-     if($shipping_charge){
+    if($shipping_charge){
         $shipping_charge_info[$key]['id'] = $shipping_charge->id;
          $shipping_charge_info[$key]['title'] = $shipping_charge->title;
          if($shipping_cal['weght'] != 0){
@@ -488,6 +487,7 @@ $products = $cart->items;
         $order['customer_zip'] = $request->zip;
         $order['shipping_email'] = $request->shipping_email;
         $order['shipping_name'] = $request->shipping_name;
+        $order['shipping_method_id'] = $request->shipping_method;
         $order['shipping_phone'] = $request->shipping_phone;
         $order['shipping_address'] = $request->shipping_address;
         $order['shipping_country'] = $request->shipping_country;
