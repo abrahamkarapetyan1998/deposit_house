@@ -258,122 +258,132 @@ class ProductController extends Controller
         $i = 1;
         while (($line = fgetcsv($file)) !== FALSE) {
 
-            if($i != 1)
-            {
+                if ($i != 1) {
 
-            if (!Product::where('sku',$line[0])->exists()){
+                    if (true) {
 
-                //--- Validation Section Ends
+                        //--- Validation Section Ends
 
-                //--- Logic Section
-                $data = new Product;
-                $sign = Currency::where('is_default','=',1)->first();
+                        //--- Logic Section
+                        $data = Product::where('sku', $line[0])->first() ?? new Product;
+                        $sign = Currency::where('is_default', '=', 1)->first();
 
-                $input['type'] = 'Physical';
-                $input['sku'] = $line[0];
+                        $input['type'] = 'Physical';
+                        $input['sku'] = $line[0];
 
-                $input['category_id'] = null;
-                $input['subcategory_id'] = null;
-                $input['childcategory_id'] = null;
+                        $input['category_id'] = null;
+                        $input['subcategory_id'] = null;
+                        $input['childcategory_id'] = null;
 
-                $mcat = Category::where(DB::raw('lower(name)'), strtolower($line[1]));
-                //$mcat = Category::where("name", $line[1]);
+                        $mcat = Category::where(DB::raw('lower(name)'), strtolower($line[1]));
+                        //$mcat = Category::where("name", $line[1]);
 
-                if($mcat->exists()){
-                    $input['category_id'] = $mcat->first()->id;
+                        if ($mcat->exists()) {
+                            $input['category_id'] = $mcat->first()->id;
 
-                    if($line[2] != ""){
-                        $scat = Subcategory::where(DB::raw('lower(name)'), strtolower($line[2]));
+                            if ($line[2] != "") {
+                                $scat = Subcategory::where(DB::raw('lower(name)'), strtolower($line[2]));
 
-                        if($scat->exists()) {
-                            $input['subcategory_id'] = $scat->first()->id;
-                        }
-                    }
-                    if($line[3] != ""){
-                        $chcat = Childcategory::where(DB::raw('lower(name)'), strtolower($line[3]));
+                                if ($scat->exists()) {
+                                    $input['subcategory_id'] = $scat->first()->id;
+                                }
+                            }
+                            if ($line[3] != "") {
+                                $chcat = Childcategory::where(DB::raw('lower(name)'), strtolower($line[3]));
 
-                        if($chcat->exists()) {
-                            $input['childcategory_id'] = $chcat->first()->id;
-                        }
-                    }
+                                if ($chcat->exists()) {
+                                    $input['childcategory_id'] = $chcat->first()->id;
+                                }
+                            }
 
-                $input['photo'] = $line[5];
-                $input['name'] = $line[4];
-                $input['details'] = $line[6];
+                            $input['photo'] = $line[5];
+                            $input['name'] = $line[4];
+                            $input['details'] = $line[6];
 //                $input['category_id'] = $request->category_id;
 //                $input['subcategory_id'] = $request->subcategory_id;
 //                $input['childcategory_id'] = $request->childcategory_id;
-                $input['color'] = $line[13];
-                $input['price'] = $line[7];
-                $input['previous_price'] = $line[8] != "" ? $line[8] : null;
-                $input['stock'] = $line[9];
-                $input['size'] = $line[10];
-                $input['size_qty'] = $line[11];
-                $input['size_price'] = $line[12];
-                $input['youtube'] = $line[15];
-                $input['policy'] = $line[16];
-                $input['meta_tag'] = $line[17];
-                $input['meta_description'] = $line[18];
-                $input['tags'] = $line[14];
-                $input['product_type'] = $line[19];
-                $input['affiliate_link'] = $line[20];
+                            $input['color'] = $line[13];
+                            $input['price'] = $line[7];
+                            $input['previous_price'] = $line[8] != "" ? $line[8] : null;
+                            $input['stock'] = $line[9];
+                            $input['size'] = $line[10];
+                            $input['size_qty'] = $line[11];
+                            $input['size_price'] = $line[12];
+                            $input['youtube'] = $line[15];
+                            $input['policy'] = $line[16];
+                            $input['meta_tag'] = $line[17];
+                            $input['meta_description'] = $line[18];
+                            $input['tags'] = $line[14];
+                            $input['product_type'] = $line[19];
+                            $input['weght'] = $line[20];
 
-                $input['slug'] = Str::slug($input['name'],'-').'-'.strtolower($input['sku']);
+                            $input['slug'] = Str::slug($input['name'], '-') . '-' . strtolower($input['sku']);
 
-                $image_url = $line[5];
+                            $image_url = $line[5];
 
-                  $ch = curl_init();
-                  curl_setopt ($ch, CURLOPT_RETURNTRANSFER, 1);
-                  curl_setopt ($ch, CURLOPT_URL, $image_url);
-                  curl_setopt ($ch, CURLOPT_CONNECTTIMEOUT, 20);
-                  curl_setopt ($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
-                  curl_setopt ($ch, CURLOPT_FOLLOWLOCATION, true);
-                  curl_setopt($ch, CURLOPT_HEADER, true);
-                  curl_setopt($ch, CURLOPT_NOBODY, true);
+                            $ch = curl_init($image_url);
+                            curl_setopt($ch, CURLOPT_HEADER, 0);
+                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                            curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
+                            $raw = curl_exec($ch);
 
-                  $content = curl_exec ($ch);
-                  $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
-                $thumb_url = '';
-                    if (strpos($contentType, 'image/') !== false) {
-                        $fimg = Image::make($line[5])->resize(800, 800);
-                        $fphoto = Str::random(12).'.jpg';
-                        $fimg->save(public_path().'/assets/images/products/'.$fphoto);
-                        $input['photo']  = $fphoto;
-                        $thumb_url = $line[5];
-                    }else{
-                        $fimg = Image::make(public_path().'/assets/images/noimage.png')->resize(800, 800);
-                        $fphoto = Str::random(12).'.jpg';
-                        $fimg->save(public_path().'/assets/images/products/'.$fphoto);
-                        $input['photo']  = $fphoto;
-                        $thumb_url = public_path().'/assets/images/noimage.png';
+                            $fphoto = Str::random(12) . '.jpg';
+                            $saveto = public_path() . 'assets/images/products/' . $fphoto;
+
+                            if (file_exists($saveto)) {
+                                unlink($saveto);
+                            }
+                            $fp = fopen($saveto, 'x');
+                            fwrite($fp, $raw);
+                            fclose($fp);
+
+                            $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+                            $thumb_url = '';
+
+                            if (strpos($contentType, 'image/') !== false) {
+
+                                $fimg = Image::make($saveto)->resize(800, 800);
+
+                                $fphoto = Str::random(12) . '.jpg';
+                                $fimg->save(public_path() . '/assets/images/products/' . $fphoto);
+                                $input['photo'] = $fphoto;
+                                $thumb_url = $line[5];
+                            } else {
+                                $fimg = Image::make(public_path() . '/assets/images/noimage.png')->resize(800, 800);
+                                $fphoto = Str::random(12) . '.jpg';
+                                $fimg->save(public_path() . '/assets/images/products/' . $fphoto);
+                                $input['photo'] = $fphoto;
+                                $thumb_url = public_path() . '/assets/images/noimage.png';
+                            }
+
+                            $timg = Image::make($saveto)->resize(285, 285);
+                            $thumbnail = Str::random(12) . '.jpg';
+                            $timg->save(public_path() . '/assets/images/thumbnails/' . $thumbnail);
+
+                            $input['thumbnail'] = $thumbnail;
+
+                            // Conert Price According to Currency
+                            $input['price'] = ($input['price'] / $sign->value);
+                            $input['previous_price'] = ($input['previous_price'] / $sign->value);
+                            $input['user_id'] = $user->id;
+                            // Save Data
+                            $data->fill($input)->save();
+
+
+                        } else {
+                       //     $log .= '<br>' . __('Row No:') . $i . __('- No Category Found!') . '<br>';
+                        }
+
+                    } else {
+                        //$log .= '<br>' . __('Row No:') . $i . __('- Duplicate Product Code!') . '<br>';
                     }
 
-                $timg = Image::make($thumb_url)->resize(285, 285);
-                $thumbnail = Str::random(12).'.jpg';
-                $timg->save(public_path().'/assets/images/thumbnails/'.$thumbnail);
-                $input['thumbnail']  = $thumbnail;
-
-                // Conert Price According to Currency
-                $input['price'] = ($input['price'] / $sign->value);
-                $input['previous_price'] = ($input['previous_price'] / $sign->value);
-                $input['user_id'] = $user->id;
-                // Save Data
-                $data->fill($input)->save();
-
-                }else{
-                    $log .= '<br>'.__('Row No:') .$i. __('- No Category Found!').'<br>';
                 }
 
-                }else{
-                    $log .= '<br>'.__('Row No:') .$i.__('- Duplicate Product Code!').'<br>';
-                }
+                $i++;
 
-            }
 
-            $i++;
-
-        }
-
+}
         fclose($file);
 
         //--- Redirect Section

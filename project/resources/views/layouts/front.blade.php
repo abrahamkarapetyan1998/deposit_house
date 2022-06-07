@@ -452,7 +452,7 @@
 
                         				@if(Auth::check())
 
-	                        				@if(Auth::guard('web')->user()->is_vendor == 2)
+	                        				@if(Auth::guard('web')->user()->is_vendor == 2 || Auth::guard('admin'))
 
 	                        					<a href="{{ route('vendor-dashboard') }}" class="sell-btn">{{ $langg->lang220 }}</a>
 

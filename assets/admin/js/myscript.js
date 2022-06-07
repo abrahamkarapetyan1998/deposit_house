@@ -735,6 +735,12 @@ $('button.addProductSubmit-btn').prop('disabled',true);
      contentType: false,
      cache: false,
      processData: false,
+     error:function(data){
+         $('.gocover').hide();
+     } ,
+        complete:function(){
+            $('.gocover').hide();
+        },
      success:function(data)
      {
         console.log(data);

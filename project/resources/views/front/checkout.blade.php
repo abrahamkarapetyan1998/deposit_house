@@ -11,9 +11,7 @@
 
 
 .root.root--in-iframe {
-
     background: #4682b447 !important;
-
 }
 
 </style>
@@ -493,11 +491,12 @@
 
 
 
-										@foreach ($new_products as $key => $products)
-
-										<div class="order-area">
-
-											@foreach($products as $product)
+@foreach ($new_products as $key => $products)
+<div class="order-area">
+    @foreach($products as  $k => $product)
+    @if($k == 'shipping_method' || $k == 'shop')
+    @continue
+    @endif
 
 											@php
 
@@ -608,8 +607,7 @@
 											<div class="row p-5">
 
 												<div class="col-md-6">
-
-													<p><b>{{__('Shipping Name')}} :</b> {{$shipping_weghts[$key]['shop_name']}}</p>
+                                                    <p><b>{{__('Shipping Name')}} :</b> {{$shipping_weghts[$key]['shop_name']}}</p>
 
 
 
@@ -617,7 +615,7 @@
 
 													<!--<p><b>{{__('Weght')}} :</b> {{$shipping_weghts[$key]['weght']}}  ({{__('KG')}})</p>-->
 
-													<b>{{__('Shipping Cost')}} :</b> <small>({{ $shipping_charge_info[$key]['title']}})</small> : <strong>{{ App\Models\Product::convertPrice($shipping_charge_info[$key]['price']) }}</strong>
+													<b>{{__('Shipping Cost')}} :</b> <small id="shipping_name_{{str_replace(' ', '', $shipping_weghts[$key]['shop_name'])}}"></small> : <strong id="shipping_price_info_{{str_replace(' ', '', $shipping_weghts[$key]['shop_name'])}}"></strong>
 
 													@endif
 
@@ -628,7 +626,6 @@
 										</div>
 
 										@endforeach
-
 
 
 
@@ -1333,16 +1330,7 @@
 
                             <input type="hidden" name="user_id" id="user_id" value="{{ Auth::guard('web')->check() ? Auth::guard('web')->user()->id : '' }}">
 
-
-
-
-
-
-
-</form>
-
-
-
+            </form>
 				</div>
 
 
@@ -1356,7 +1344,6 @@
 						<div class="order-box">
 
 						<h4 class="title">{{ $langg->lang127 }}</h4>
-
 						<ul class="order-list">
 
 							<li>
@@ -1387,7 +1374,7 @@
 
 							<P>
 
-								<b>{{  App\Models\Product::convertPrice($shipping_total_cost)  }}</b>
+								<b id="shipping_total_cost" data-price="{{$shipping_total_cost}}">{{  App\Models\Product::convertPrice($shipping_total_cost)  }}</b>
 
 							</P>
 
@@ -1442,15 +1429,6 @@
 
 
 							@endif
-
-
-
-
-
-
-
-
-
 					@if(Session::has('coupon'))
 
 
@@ -1601,51 +1579,50 @@
 
 						@if($digital == 0)
 
+                        <div class="packeging-area">
 
-
-						{{-- Shipping Method Area Start --}}
-
-						<div class="packeging-area">
-
-								<h4 class="title">{{ $langg->lang765 }}</h4>
+                                <h4 class="title">{{ $langg->lang765 }}</h4>
 
                             @if(!$shippings_available->count())
                              <h4>No Methods available</h4>
                             @else
+                            @foreach($new_products as $key => $products)
+                            @foreach($products['shop'] as $ky=>  $shop)
+                            <h2 class="title">{{$shop->shop_name}}</h2>
+                            @foreach($products['shipping_method'] as $fe)
+                                <div class="radio-design  ">
 
-                            @foreach($shippings_available as $data)
+                                        <input type="radio" class="shipping" id="free-shepping_{{ $fe->id }}" data-price="{{$fe->price}}" data-shop-name="{{ str_replace(' ','',$shop->shop_name)}}" data-id="{{$key}}" data-method-id="{{$fe->id}}" name="shipping_{{$key}}" value="{{ round($fe->price * $curr->value,2) }}" {{ ($loop->first) ? 'checked' : '' }}>
 
+                                        <span class="checkmark"></span>
 
+                                        <label for="free-shepping_{{ $fe->id }}" class="free_shipping_data" data-title="{{$fe->title}}">
 
-								<div class="radio-design">
+                                                {{ $fe->title }}
 
-										<input type="radio" class="shipping" id="free-shepping{{ $data->id }}" name="shipping" value="{{ round($data->price * $curr->value,2) }}" {{ ($loop->first) ? 'checked' : '' }}>
+                                                @if($fe->price != 0)
 
-										<span class="checkmark"></span>
+                                                + {{ $curr->sign }}{{ round($fe->price * $curr->value,2) }}
 
-										<label for="free-shepping{{ $data->id }}">
+                                                @endif
 
-												{{ $data->title }}
+                                                <small>{{ $fe->subtitle }}</small>
 
-												@if($data->price != 0)
+                                        </label>
 
-												+ {{ $curr->sign }}{{ round($data->price * $curr->value,2) }}
-
-												@endif
-
-												<small>{{ $data->subtitle }}</small>
-
-										</label>
-
-								</div>
-
-
-
-							@endforeach
+                                </div>
+                                @endforeach
+                                @endforeach
+                            @endforeach
 
 
 
-						</div>
+
+                        </div>
+
+
+						{{-- Shipping Method Area Start --}}
+
                         @endif
 
 						{{-- Shipping Method Area End --}}
@@ -1664,7 +1641,7 @@
 
 
 
-								<div class="radio-design">
+								<div class="radio-design ">
 
 										<input type="radio" class="packing" id="free-package{{ $data->id }}" name="packeging" value="{{ round($data->price * $curr->value,2) }}" {{ ($loop->first) ? 'checked' : '' }}>
 
@@ -2092,10 +2069,6 @@
 
 	$($('a.payment:first').attr('href')).load($('a.payment:first').data('href'));
 
-
-
-
-
 		var show = $('a.payment:first').data('show');
 
 		if(show != 'no') {
@@ -2222,45 +2195,42 @@ $('#shipop').on('change',function(){
 
 
 
-$('.shipping').on('click',function(){
+// $('.shipping').on('click',function(){
 
-	mship = $(this).val();
+// 	mship = $(this).val();
 
 
+// $('#shipping-cost').val(mship);
+// var ttotal = parseFloat($('#tgrandtotal').val()) + parseFloat(mship) + parseFloat(mpack);
 
-$('#shipping-cost').val(mship);
+// ttotal = parseFloat(ttotal);
 
-var ttotal = parseFloat($('#tgrandtotal').val()) + parseFloat(mship) + parseFloat(mpack);
+//       if(ttotal % 1 != 0)
 
-ttotal = parseFloat(ttotal);
+//       {
 
-      if(ttotal % 1 != 0)
+//         ttotal = ttotal.toFixed(2);
+//     }
 
-      {
+//     if(pos == 0){
 
-        ttotal = ttotal.toFixed(2);
+//         $('#final-cost').html('{{ $curr->sign }}'+ttotal);
 
-      }
+//     }
 
-		if(pos == 0){
+// 		else{
 
-			$('#final-cost').html('{{ $curr->sign }}'+ttotal);
+// 			$('#final-cost').html(ttotal+'{{ $curr->sign }}');
 
-		}
-
-		else{
-
-			$('#final-cost').html(ttotal+'{{ $curr->sign }}');
-
-		}
+// 		}
 
 
 
-$('#grandtotal').val(ttotal);
+// $('#grandtotal').val(ttotal);
 
 
 
-})
+// })
 
 
 
@@ -2271,7 +2241,6 @@ $('.packing').on('click',function(){
 $('#packing-cost').val(mpack);
 
 var ttotal = parseFloat($('#tgrandtotal').val()) + parseFloat(mship) + parseFloat(mpack);
-
 ttotal = parseFloat(ttotal);
 
       if(ttotal % 1 != 0)
@@ -2295,18 +2264,8 @@ ttotal = parseFloat(ttotal);
 			$('#final-cost').html(ttotal+'{{ $curr->sign }}');
 
 		}
-
-
-
-
-
 $('#grandtotal').val(ttotal);
-
-
-
 })
-
-
 
     $("#check-coupon-form").on('submit', function () {
 
@@ -2391,10 +2350,6 @@ $('#grandtotal').val(ttotal);
 								$('.dpercent').html('');
 
 								}
-
-
-
-
 
 var ttotal = parseFloat($('#grandtotal').val()) + parseFloat(mship) + parseFloat(mpack);
 
@@ -2533,7 +2488,6 @@ var ck = 0;
 
 
 	$('.checkoutform').on('submit',function(e){
-
 		if(ck == 0) {
 
 			e.preventDefault();
@@ -2580,8 +2534,36 @@ var ck = 0;
 
 // Step 2 btn DONE
 
+    $(document).ready(function(){
+		total_price  = 0;
+		grand_total = parseFloat($('#tgrandtotal').val())
+		grand_final =  grand_total;
+		$('input[id^="free-shepping_"]').each(function(index){
+		if($(this).is(':checked')) {
+			total_price = total_price += parseInt($(this).attr('data-price'));
+			grand_final = grand_final += parseInt($(this).attr('data-price'));
+		}
+    })
+	$('#final-cost').text(grand_final)
 
+	$('#shipping_total_cost').text(total_price);
+    $('input[id^="free-shepping_"]').on('change', function(){
+			total_price = 0;
+            shop_name = $(this).attr('data-shop-name');
+			grand_final = grand_total;
+            $('#shipping_name_'  + shop_name).text($(this).parent().find('label').attr('data-title'))
+            $('#shipping_price_info_' + shop_name).text($(this).attr('data-price'))
+	$('input[id^="free-shepping_"]').each(function(index){
+		if($(this).is(':checked')) {
+			total_price = total_price += parseInt($(this).attr('data-price'));
+			grand_final = grand_final += parseInt($(this).attr('data-price'));
+			}
+    })
+	$('#shipping_total_cost').text(total_price);
+	$('#final-cost').text(grand_final)
+	});
 
+    });
 	$('#step2-btn').on('click',function(){
 
 		$('#pills-step3-tab').removeClass('active');
@@ -2605,7 +2587,6 @@ var ck = 0;
 	$('#step3-btn').on('click',function(){
 
 	 	if($('a.payment:first').data('val') == 'paystack'){
-
 			$('.checkoutform').prop('id','step1-form');
 
 		}
@@ -2651,9 +2632,14 @@ var ck = 0;
 
 
 	$('#final-btn').on('click',function(){
-
+    $('#grandtotal').val(grand_final)
 		ck = 1;
-
+        $('input[id^="free-shepping_"]').each(function(index){
+		if($(this).is(':checked')) {
+            $('.checkoutform').append(`<input type='hidden' name='shipping_methods[]' value='${$(this).attr('data-method-id')}'>`)
+            $('.checkoutform').append(`<input type='hidden' name='shipping_methods_vendor[]' value='${$(this).attr('data-id')}'>`)
+         }
+    })
 	})
 
 

@@ -576,8 +576,13 @@ $('#category_select').on('change',function(){
       }
       else{
         $(".autocomplete").show();
-        $("#myInputautocomplete-list").load(mainurl+'/autosearch/product/'+search);
-
+        var cat=$("#category_select").val();
+        if(cat) {
+            $("#myInputautocomplete-list").load(mainurl + '/autosearch/product/' + search+'?category_id='+cat);
+        }else
+            {
+                $("#myInputautocomplete-list").load(mainurl + '/autosearch/product/' + search);
+            }
       }
     });
 // Auto Complete Section Ends

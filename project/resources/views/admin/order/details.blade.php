@@ -557,8 +557,14 @@
 
                                     <th width="10%">:</th>
 
-                                    <td width="45%">{{$order->shippingMethod->title}}</td>
+                                    <td width="45%">
+                                        @foreach($order->shippingMethod as $ShM)
+                                        <p>
+                                            {{$ShM->title}}<br>
+                                        </p>
 
+                                        @endforeach
+                                    </td>
                                 </tr>
                                                 </tbody>
 

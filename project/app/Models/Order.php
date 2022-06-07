@@ -22,6 +22,9 @@ class Order extends Model
         return $this->hasMany('App\Models\OrderTrack','order_id');
     }
     public function shippingMethod(){
-        return $this->hasOne('App\Models\Shipping', 'id','shipping_method_id');
+        return $this->belongsToMany('App\Models\Shipping', 'order_shippings',  'order_id','shipping_id' );
     }
+    // public function ordershippings(){
+    //     return $this->belongsToMany('App\OrderShippings', 'order_id', 'id');
+    // }
 }

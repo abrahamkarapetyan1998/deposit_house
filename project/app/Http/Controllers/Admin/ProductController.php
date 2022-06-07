@@ -36,7 +36,7 @@ class ProductController extends Controller
          return Datatables::of($datas)
                             ->editColumn('name', function(Product $data) {
                                 $name =  mb_strlen($data->name,'UTF-8') > 50 ? mb_substr($data->name,0,50,'UTF-8').'...' : $data->name;
-
+             
                                 $id = '<small>'.__("ID").': <a href="'.route('front.product', $data->slug).'" target="_blank">'.sprintf("%'.08d",$data->id).'</a></small>';
 
                                 $id3 = $data->type == 'Physical' ?'<small class="ml-2"> '.__("SKU").': <a href="'.route('front.product', $data->slug).'" target="_blank">'.$data->sku.'</a>' : '';
@@ -81,7 +81,7 @@ class ProductController extends Controller
          return Datatables::of($datas)
                             ->editColumn('name', function(Product $data) {
                                 $name =  mb_strlen($data->name,'UTF-8') > 50 ? mb_substr($data->name,0,50,'UTF-8').'...' : $data->name;
-
+             
                                 $id = '<small>'.__("ID").': <a href="'.route('front.product', $data->slug).'" target="_blank">'.sprintf("%'.08d",$data->id).'</a></small>';
 
                                 $id3 = $data->type == 'Physical' ?'<small class="ml-2"> '.__("SKU").': <a href="'.route('front.product', $data->slug).'" target="_blank">'.$data->sku.'</a>' : '';
@@ -359,6 +359,7 @@ class ProductController extends Controller
                     if(in_array(0,$input['size_qty'])){
                         return response()->json(array('errors' => [0 => 'Size Qty can not be 0.']));
                     }
+
                     $input['size'] = implode(',', $request->size);
                     $input['size_qty'] = implode(',', $request->size_qty);
                     $size_prices = $request->size_price;
@@ -366,7 +367,7 @@ class ProductController extends Controller
                     foreach($size_prices as $key => $sPrice){
                         $s_price[$key] = $sPrice / $sign->value;
                     }
-
+                    
                     $input['size_price'] = implode(',', $s_price);
                 }
             }
@@ -472,7 +473,7 @@ class ProductController extends Controller
           if (!empty($catAttrs)) {
             foreach ($catAttrs as $key => $catAttr) {
               $in_name = $catAttr->input_name;
-
+              
               if ($request->has("$in_name")) {
                 $attrArr["$in_name"]["name"] = $catAttr->name;
                 $attrArr["$in_name"]["values"] = $request["$in_name"];
@@ -497,7 +498,7 @@ class ProductController extends Controller
           if (!empty($subAttrs)) {
             foreach ($subAttrs as $key => $subAttr) {
               $in_name = $subAttr->input_name;
-
+             
               if ($request->has("$in_name")) {
                 $attrArr["$in_name"]["name"] = $catAttr->name;
                 $attrArr["$in_name"]["values"] = $request["$in_name"];
@@ -630,13 +631,16 @@ class ProductController extends Controller
 
             if($i != 1)
             {
-
-            if (!Product::where('sku',$line[0])->exists()){
+            if(!$line[0]) {
+                continue;
+            }
+            if (true){
 
                 //--- Validation Section Ends
 
                 //--- Logic Section
-                $data = new Product;
+                $data =Product::where('sku',$line[0])->first()?? new Product;
+
                 $sign = Currency::where('is_default','=',1)->first();
 
                 $input['type'] = 'Physical';
@@ -683,20 +687,20 @@ class ProductController extends Controller
                 $input['meta_description'] = $line[18];
                 $input['tags'] = $line[14];
                 $input['product_type'] = $line[19];
-                  $input['weght'] = $line[20];
+                $input['weght'] = $line[20];
                 $input['slug'] = Str::slug($input['name'],'-').'-'.strtolower($input['sku']);
 
                 $image_url = $line[5];
-
+                
                   $ch = curl_init();
                   curl_setopt ($ch, CURLOPT_RETURNTRANSFER, 1);
                   curl_setopt ($ch, CURLOPT_URL, $image_url);
                   curl_setopt ($ch, CURLOPT_CONNECTTIMEOUT, 20);
                   curl_setopt ($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
                   curl_setopt ($ch, CURLOPT_FOLLOWLOCATION, true);
-                  curl_setopt($ch, CURLOPT_HEADER, true);
+                  curl_setopt($ch, CURLOPT_HEADER, true); 
                   curl_setopt($ch, CURLOPT_NOBODY, true);
-
+                
                   $content = curl_exec ($ch);
                   $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
 
@@ -709,13 +713,13 @@ class ProductController extends Controller
                         $input['photo']  = $fphoto;
                         $thumb_url = $line[5];
                     }else{
-                        $fimg = Image::make(public_path().'/assets/images/noimage.png')->resize(800, 800);
+                        $fimg = Image::make(public_path().'/assets/images/noimage.png')->resize(800, 800); 
                         $fphoto = Str::random(10).'.jpg';
                         $fimg->save(public_path().'/assets/images/products/'.$fphoto);
                         $input['photo']  = $fphoto;
                         $thumb_url = public_path().'/assets/images/noimage.png';
                     }
-
+                
 
                 $timg = Image::make($thumb_url)->resize(285, 285);
                 $thumbnail = Str::random(10).'.jpg';
@@ -728,6 +732,7 @@ class ProductController extends Controller
 
                 // Save Data
                 $data->fill($input)->save();
+
 
                     }else{
                         $log .= "<br>Row No: ".$i." - No Category Found!<br>";
@@ -854,6 +859,7 @@ class ProductController extends Controller
                                     if(in_array(0,$input['size_qty'])){
                                         return response()->json(array('errors' => [0 => 'Size Qty can not be 0.']));
                                     }
+
                                     $input['size'] = implode(',', $request->size);
                                     $input['size_qty'] = implode(',', $request->size_qty);
                                     $size_prices = $request->size_price;
@@ -861,7 +867,7 @@ class ProductController extends Controller
                                     foreach($size_prices as $key => $sPrice){
                                         $s_price[$key] = $sPrice / $sign->value;
                                     }
-
+                                    
                                     $input['size_price'] = implode(',', $s_price);
                                 }
                         }
@@ -1078,7 +1084,7 @@ class ProductController extends Controller
 
         // Set SLug
         $prod->slug = Str::slug($data->name,'-').'-'.strtolower($data->sku);
-
+         
         $prod->update();
 
 

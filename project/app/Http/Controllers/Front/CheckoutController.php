@@ -24,6 +24,7 @@ use App\Models\VendorOrder;
 use Auth;
 use DB;
 use App\Classes\SMS;
+use App\OrderShippings;
 use Illuminate\Http\Request;
 use Session;
 use Validator;
@@ -78,13 +79,13 @@ class CheckoutController extends Controller
 $oldCart = Session::get('cart');
 $cart = new Cart($oldCart);
 $products = $cart->items;
-
 // Shipping Method
  $new_products = [];
  $shipping_weghts = [];
  foreach($products as $key => $product){
-
      $current_item = Product::findOrFail($product['item']['id']);
+     $product['shippings'] = Shipping::where('user_id', $product['item']['user_id'])->where('form_weght', '<=' ,$current_item->weght)->where('to_weght' , '>=', $current_item->weght)->get();
+
 
      if(array_key_exists($product['item']['user_id'],$new_products)){
          if($product['item']['user_id'] == 0){
@@ -105,19 +106,22 @@ $products = $cart->items;
          }
          $new_products[$product['item']['user_id']][] = $product;
         }
- }
-
-
+        $new_products[$product['item']['user_id']]['shipping_method'] = Shipping::where('user_id', $product['item']['user_id'])->where('form_weght', '<=' ,$current_item->weght)->where('to_weght' , '>=', $current_item->weght)->get();
+        $new_products[$product['item']['user_id']]['shop'] = User::where('id',$current_item->user_id)->get();
+        if($new_products[$product['item']['user_id']]['shipping_method']->isEmpty()){
+            $new_products[$product['item']['user_id']]['shipping_method'] = Shipping::where('user_id', 0)->where('form_weght', '<=' ,$current_item->weght)->where('to_weght' , '>=', $current_item->weght)->get();
+        }
+    }
  $shipping_charge_info = [];
  $shipping_total_cost = 0;
  foreach($shipping_weghts as $key => $shipping_cal){
      $shipping_charge = Shipping::whereUserId($key)->where('form_weght', '<=' ,$shipping_cal['weght'])->where('to_weght' , '>=', $shipping_cal['weght'])->first();
      $shippings_available =  Shipping::where('form_weght', '<=' ,$shipping_cal['weght'])->where('to_weght' , '>=', $shipping_cal['weght'])->get();
-    if($shipping_charge){
+
+     if($shipping_charge){
         $shipping_charge_info[$key]['id'] = $shipping_charge->id;
          $shipping_charge_info[$key]['title'] = $shipping_charge->title;
          if($shipping_cal['weght'] != 0){
-            $shipping_total_cost += $shipping_charge->price;
          }
          $shipping_charge_info[$key]['price'] = $shipping_charge->price;
          $shipping_charge_info[$key]['weght'] = $shipping_cal['weght'];
@@ -125,7 +129,6 @@ $products = $cart->items;
 
          $shipping_charge = Shipping::where('form_weght', '<=' ,$shipping_cal['weght'])->where('to_weght' , '>=', $shipping_cal['weght'])->first();
           if($shipping_cal['weght'] != 0){
-            $shipping_total_cost += $shipping_charge->price;
          }
          $shipping_charge_info[$key]['id'] = $shipping_charge->id;
          $shipping_charge_info[$key]['title'] = $shipping_charge->title;
@@ -134,11 +137,11 @@ $products = $cart->items;
      }
  }
 
- foreach($shipping_charge_info as $ttt => $vprive){
-    $NEW_TTT[$ttt]['id'] = $vprive['id'];
-    $NEW_TTT[$ttt]['price'] = $vprive['price'];
- }
- $all_vendor_shipp = json_encode($NEW_TTT,true);
+        foreach($shipping_charge_info as $ttt => $vprive){
+            $NEW_TTT[$ttt]['id'] = $vprive['id'];
+            $NEW_TTT[$ttt]['price'] = $vprive['price'];
+        }
+        $all_vendor_shipp = json_encode($NEW_TTT,true);
 
 
 
@@ -146,10 +149,6 @@ $products = $cart->items;
         {
                 $gateways =  PaymentGateway::where('status','=',1)->get();
                 $pickups = Pickup::all();
-
-
-
-
                 // Packaging
 
                 if($gs->multiple_packaging == 1)
@@ -388,8 +387,6 @@ $products = $cart->items;
 
     public function cashondelivery(Request $request)
     {
-
-
         if($request->pass_check) {
             $users = User::where('email','=',$request->personal_email)->get();
             if(count($users) == 0) {
@@ -419,7 +416,7 @@ $products = $cart->items;
         }
             if (Session::has('currency'))
             {
-              $curr = Currency::find(Session::get('currency'));
+                $curr = Currency::find(Session::get('currency'));
             }
             else
             {
@@ -429,8 +426,11 @@ $products = $cart->items;
         $oldCart = Session::get('cart');
         $cart = new Cart($oldCart);
         $whole_discount  = 0;
+        $shipping_arr_vendor = [];
         foreach($cart->items as $key => $prod)
         {
+
+            $shipping_arr_vendor[] = $prod['item']['user_id'];
             if(isset($prod['discount1'])){
                 $whole_discount += $prod['discount1'];
             }
@@ -457,7 +457,7 @@ $products = $cart->items;
                     }
                 }
         }
-        }
+    }
         $order = new Order;
         $success_url = action('Front\PaymentController@payreturn');
         $item_name = $gs->title." Order";
@@ -505,6 +505,7 @@ $products = $cart->items;
         $order['vendor_packing_id'] = $request->vendor_packing_id;
         $decoded = json_decode($order['cart']);
 
+
         foreach($decoded->items as $item){
             if($item->size_qty !== ""){
                $arr = array_combine($item->item->size, $item->item->size_qty);
@@ -529,6 +530,20 @@ $products = $cart->items;
             $order['affilate_charge'] = $sub;
         }
         $order->save();
+        $shippings = [];
+        foreach($request->shipping_methods as $key => $method){
+                $shippings[$key]['method_id'] = $method;
+            }
+        foreach($request->shipping_methods_vendor as $key => $method_vendor){
+            $shippings[$key]['method_vendor_id'] =  $method_vendor;
+        }
+        foreach($shippings as $shipping) {
+            $order_shipping =  OrderShippings::create([
+                'order_id' => $order['id'],
+                'vendor_id' => $shipping['method_vendor_id'],
+                'shipping_id' => $shipping['method_id'],
+            ]);
+        }
 
         $notf = null;
                     $vendor_ids = [];
@@ -835,19 +850,17 @@ $products = $cart->items;
 
     public function gateway(Request $request)
     {
-
-$input = $request->all();
-
-$rules = [
-    'txn_id4' => 'required',
-];
+        $input = $request->all();
+        $rules = [
+            'txn_id4' => 'required',
+        ];
 
 
-$messages = [
-    'required' => __('The Transaction ID field is required.'),
-];
+        $messages = [
+            'required' => __('The Transaction ID field is required.'),
+        ];
 
-$validator = Validator::make($input, $rules, $messages);
+        $validator = Validator::make($input, $rules, $messages);
 
        if ($validator->fails()) {
             Session::flash('unsuccess', $validator->messages()->first());
@@ -923,6 +936,7 @@ $validator = Validator::make($input, $rules, $messages);
         }
         $settings = Generalsetting::findOrFail(1);
         $order = new Order;
+
         $success_url = action('Front\PaymentController@payreturn');
         $item_name = $settings->title." Order";
         $item_number = Str::random(10);
@@ -967,7 +981,20 @@ $validator = Validator::make($input, $rules, $messages);
         $order['vendor_shipping_id'] = $request->vendor_shipping_id;
         $order['vendor_packing_id'] = $request->vendor_packing_id;
         $decoded = json_decode($order['cart']);
-
+        $shippings = [];
+        foreach($request->shipping_methods as $key => $method){
+                $shippings[$key]['method_id'] = $method;
+            }
+        foreach($request->shipping_methods_vendor as $key => $method_vendor){
+            $shippings[$key]['method_vendor_id'] =  $method_vendor;
+        }
+        foreach($shippings as $shipping) {
+            $order_shipping =  OrderShippings::create([
+                'order_id' => $order['id'],
+                'vendor_id' => $shipping['method_vendor_id'],
+                'shipping_id' => $shipping['method_id'],
+            ]);
+        }
         foreach($decoded->items as $item){
             if($item->size_qty !== ""){
                $arr = array_combine($item->item->size, $item->item->size_qty);

@@ -10,13 +10,15 @@ use Illuminate\Support\Facades\Session;
 class Product extends Model
 {
 
-    protected $fillable = ['user_id','category_id','product_type','affiliate_link','sku', 'subcategory_id', 'childcategory_id', 'attributes', 'name', 'photo', 'size','size_qty','size_price', 'color', 'details','price','previous_price','stock','policy','status', 'views','tags','featured','best','top','hot','latest','big','trending','sale','features','colors','product_condition','ship','meta_tag','meta_description','youtube','type','file','license','license_qty','link','platform','region','licence_type','measure','discount_date','is_discount','whole_sell_qty','whole_sell_discount','catalog_id','slug','weght'];
+    protected $fillable = ['user_id','thumbnail','category_id','product_type','affiliate_link','sku', 'subcategory_id', 'childcategory_id', 'attributes', 'name', 'photo', 'size','size_qty','size_price', 'color', 'details','price','previous_price','stock','policy','status', 'views','tags','featured','best','top','hot','latest','big','trending','sale','features','colors','product_condition','ship','meta_tag','meta_description','youtube','type','file','license','license_qty','link','platform','region','licence_type','measure','discount_date','is_discount','whole_sell_qty','whole_sell_discount','catalog_id','slug','weght'];
 
     public static function filterProducts($collection)
     {
         foreach ($collection as $key => $data) {
-            if($data->user->is_vendor != 2){
-                unset($collection[$key]);
+            if($data->user_id != 0){
+                if($data->user->is_vendor != 2){
+                    unset($collection[$key]);
+                }
             }
             if(isset($_GET['max'])){
                  if($data->vendorSizePrice() >= $_GET['max']) {
@@ -36,9 +38,9 @@ class Product extends Model
 			}
 		});
     }
-
+    
     public  function mainPrice($price) {
-
+       
         $gs = Generalsetting::findOrFail(1);
         $curr = Currency::where('is_default','=',1)->first();
         $price = round($price * $curr->value,2);
@@ -109,7 +111,7 @@ class Product extends Model
         return $this->user_id != 0 ? '<small class="ml-2"> '.__("VENDOR").': <a href="'.route('admin-vendor-show',$this->user_id).'" target="_blank">'.$this->user->shop_name.'</a></small>' : '';
     }
 
-
+    
     public function vendorPrice() {
         $gs = cache()->remember('generalsettings', now()->addDay(), function () {
             return DB::table('generalsettings')->first();
@@ -191,12 +193,12 @@ class Product extends Model
             }
           }
       }
-
+      
           // Attribute Section Ends
 
 
         return $price;
-
+      
     }
 
 
@@ -280,7 +282,7 @@ class Product extends Model
             return DB::table('currencies')->where('is_default','=',1)->first();
         });
     }
-
+ 
 
 
         $price = round(($price) * $curr->value,2);
@@ -430,7 +432,7 @@ class Product extends Model
     public function emptyStock() {
         $stck = (string)$this->stock;
         if($stck == "0"){
-            return true;
+            return true;            
         }
     }
 
